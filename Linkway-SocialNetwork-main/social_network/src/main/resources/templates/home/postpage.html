@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Post Page</title>
+    <link rel="stylesheet" th:href="@{/css/postpage.css}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+    <main class="postpage">
+        <!-- Post Header Section -->
+        <div class="postpage-header">
+            <div class="postpage-info">
+                <p th:text="${#dates.format(post.getCreatedAt(), 'yyyy/MM/dd HH:mm')}"></p>
+                <p th:if="${post.getUpdatedAt() != null}"
+                    th:text="${'Last edited on ' + #dates.format(post.getUpdatedAt(), 'yyyy/MM/dd HH:mm')}"></p>
+                <p th:text="${post.getViews() + ' views'}"></p>
+            </div>
+            <div class="postpage-title">
+                <h2 th:text="${post.getTitle()}"></h2>
+                <a th:href="@{${'/post/edit/' + post.id}}" th:if="${post.author.username == session.username}">
+                    Edit Post
+                </a>
+            </div>
+            <div class="postpage-author-info">
+                <a th:href="@{${'/profile/' + post.getAuthor().getUsername()}}">
+                    <img th:src="@{${post.getAuthor().getAvatarImagePath()}}" class="author-avatar">
+                </a>
+                <a th:href="@{${'/profile/' + post.getAuthor().getUsername()}}" th:text="${post.getAuthor().getDisplayName()}"></a>
+            </div>
+            <div class="postpage-tags">
+                <a th:each="tag : ${post.getTags()}" th:href="@{'/tag/' + tag.name}" th:text="${tag.name}"></a>
+            </div>
+        </div>
+
+        <!-- Post Content Section -->
+        <div class="postpage-content">
+            <div th:utext="${post.htmlContent}"></div>
+        </div>
+
+        <!-- Comments Section -->
+        <div id="post-comments">
+            <h2>Comments</h2>
+            <form th:action="@{${'/post/' + post.id + '/comment'}}" th:object="${userComment}" method="post">
+                <textarea th:field="*{content}" placeholder="Write a comment..."></textarea>
+                <button type="submit">Post Comment</button>
+            </form>
+
+            <!-- Comment List -->
+            <div th:each="comment : ${rootComments}" class="comment-item">
+                <p th:text="${comment.getAuthor().getDisplayName()}"></p>
+                <div th:utext="${comment.getHtmlContent()}"></div>
+            </div>
+        </div>
+
+        <!-- Sidebar Section -->
+        <div class="sidebar">
+            <div class="author-info">
+                <img th:src="@{${post.getAuthor().getAvatarImagePath()}}" class="profile-avatar">
+                <a th:href="@{${'/profile/' + post.getAuthor().getUsername()}}" th:text="${post.getAuthor().getDisplayName()}"></a>
+                <p th:text="${post.getAuthor().getFollowersCount() + ' followers'}"></p>
+            </div>
+
+            <div class="related-posts">
+                <h3>Related Posts</h3>
+                <div th:each="relatedPost : ${relatedPosts}">
+                    <a th:href="@{${'/post/' + relatedPost.id}}" th:text="${relatedPost.title}"></a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
